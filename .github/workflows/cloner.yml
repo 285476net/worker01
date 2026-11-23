@@ -1,0 +1,38 @@
+name: Content Task Worker
+
+on:
+  repository_dispatch:
+    types: [clone_content]
+  workflow_dispatch:
+
+concurrency:
+  group: worker-slot-${{ github.event.client_payload.slot || '1' }}
+  cancel-in-progress: false
+
+jobs:
+  clone_job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout Worker Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run On-Demand Worker
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          DUMP_CHANNEL_ID: ${{ secrets.DUMP_CHANNEL_ID }}
+          WORKER_REPO_NAME: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: python cloner.py
