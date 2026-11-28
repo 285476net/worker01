@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: worker-slot-${{ github.event.client_payload.slot || '1' }}
+  group: personal-worker-single
   cancel-in-progress: false
 
 jobs:
   clone_job:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 35
     steps:
       - name: Checkout Worker Code
         uses: actions/checkout@v4
